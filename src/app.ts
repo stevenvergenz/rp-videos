@@ -20,7 +20,7 @@ export default class VideoManager {
 	private screen: MRE.Actor;
 	private label: MRE.Actor;
 	private hoverText: string;
-	private volume = 1;
+	private volume = 0.2;
 	private textureCache: { [url: string]: MRE.Texture } = {};
 	private streamCache: { [url: string]: MRE.VideoStream } = {};
 
