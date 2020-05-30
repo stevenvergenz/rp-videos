@@ -148,7 +148,9 @@ export class ChannelManager {
 				return {
 					index: i,
 					id: url,
-					url
+					name: `Manual Video ${i}`,
+					url,
+					live: true
 				} as VideoDetails;
 			}));
 		}
