@@ -80,7 +80,7 @@ export class ChannelManager {
 		}
 
 		return nowPlaying;*/
-		return this.videoDetails[0].id;
+		return this.videoDetails.filter(vid => vid.live).map(vid => vid.id);
 	}
 
 	public async updateVideoLinks(force = false) {
