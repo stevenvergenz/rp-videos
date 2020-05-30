@@ -142,13 +142,13 @@ export class ChannelManager {
 		const videoDetails: VideoDetails[] = [];
 
 		// use manually provided video IDs instead of searching if provided
-		if (process.env.VIDEO_IDS) {
-			const ids = process.env.VIDEO_IDS.split(',');
-			videoDetails.push(...ids.map((id, i) => {
+		if (process.env.VIDEO_URLS) {
+			const urls = process.env.VIDEO_URLS.split(';');
+			videoDetails.push(...urls.map((url, i) => {
 				return {
 					index: i,
-					id: id,
-					url: `youtube://${id}`
+					id: url,
+					url
 				} as VideoDetails;
 			}));
 		}
