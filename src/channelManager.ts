@@ -54,10 +54,10 @@ export class ChannelManager {
 
 	public async refreshLiveStatus() {
 		if (this.videoDetails.length === 0) return;
-		/*const service = new google.youtube_v3.Youtube({ auth: API_KEY });
+		const service = new google.youtube_v3.Youtube({ auth: API_KEY });
 		const response = await service.videos.list({
 			part: 'snippet,liveStreamingDetails',
-			id: this.videoDetails.map(vd => vd.id).join(','),
+			id: this.videoDetails.filter(vd => /^youtube:/.test(vd.url)).map(vd => vd.id).join(','),
 			maxResults: this.videoDetails.length,
 			key: API_KEY
 		});
@@ -79,8 +79,7 @@ export class ChannelManager {
 			Object.assign(vid, updates[vid.id]);
 		}
 
-		return nowPlaying;*/
-		return this.videoDetails.filter(vid => vid.live).map(vid => vid.id);
+		return nowPlaying;
 	}
 
 	public async updateVideoLinks(force = false) {
