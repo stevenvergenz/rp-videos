@@ -54,7 +54,7 @@ export class ChannelManager {
 
 	public async refreshLiveStatus() {
 		if (this.videoDetails.length === 0) return;
-		const service = new google.youtube_v3.Youtube({ auth: API_KEY });
+		/*const service = new google.youtube_v3.Youtube({ auth: API_KEY });
 		const response = await service.videos.list({
 			part: 'snippet,liveStreamingDetails',
 			id: this.videoDetails.map(vd => vd.id).join(','),
@@ -70,13 +70,6 @@ export class ChannelManager {
 					result.liveStreamingDetails.actualStartTime ||
 					result.liveStreamingDetails.scheduledStartTime)
 			};
-
-			if (process.env.VIDEO_IDS) {
-				Object.assign(updates[result.id], {
-					name: result.snippet.title,
-					thumbnailUrl: result.snippet.thumbnails.default.url
-				} as Partial<VideoDetails>);
-			}
 		}
 		const nowPlaying: string[] = [];
 		for (const vid of this.videoDetails) {
@@ -86,7 +79,8 @@ export class ChannelManager {
 			Object.assign(vid, updates[vid.id]);
 		}
 
-		return nowPlaying;
+		return nowPlaying;*/
+		return this.videoDetails[0].id;
 	}
 
 	public async updateVideoLinks(force = false) {
