@@ -54,29 +54,35 @@ export class ChannelManager {
 
 	public async refreshLiveStatus() {
 		if (this.videoDetails.length === 0) return;
-		const service = new google.youtube_v3.Youtube({ auth: API_KEY });
-		const response = await service.videos.list({
-			part: 'snippet,liveStreamingDetails',
-			id: this.videoDetails.filter(vd => /^youtube:/.test(vd.url)).map(vd => vd.id).join(','),
-			maxResults: this.videoDetails.length,
-			key: API_KEY
-		});
-
-		const updates: { [id: string]: Partial<VideoDetails> } = {};
-		for (const result of response.data.items) {
-			updates[result.id] = {
-				live: result.snippet.liveBroadcastContent === 'live',
-				startTime: Date.parse(
-					result.liveStreamingDetails.actualStartTime ||
-					result.liveStreamingDetails.scheduledStartTime)
-			};
-		}
 		const nowPlaying: string[] = [];
-		for (const vid of this.videoDetails) {
-			if (vid.live === false && updates[vid.id].live === true) {
-				nowPlaying.push(vid.id);
+		
+		try {
+			const service = new google.youtube_v3.Youtube({ auth: API_KEY });
+			const response = await service.videos.list({
+				part: 'snippet,liveStreamingDetails',
+				id: this.videoDetails.filter(vd => /^youtube:/.test(vd.url)).map(vd => vd.id).join(','),
+				maxResults: this.videoDetails.length,
+				key: API_KEY
+			});
+
+			const updates: { [id: string]: Partial<VideoDetails> } = {};
+			for (const result of response.data.items) {
+				updates[result.id] = {
+					live: result.snippet.liveBroadcastContent === 'live',
+					startTime: Date.parse(
+						result.liveStreamingDetails.actualStartTime ||
+						result.liveStreamingDetails.scheduledStartTime)
+				};
 			}
-			Object.assign(vid, updates[vid.id]);
+
+			for (const vid of this.videoDetails) {
+				if (vid.live === false && updates[vid.id].live === true) {
+					nowPlaying.push(vid.id);
+				}
+				Object.assign(vid, updates[vid.id]);
+			}
+		} catch (err) {
+			console.error(err);
 		}
 
 		return nowPlaying;
