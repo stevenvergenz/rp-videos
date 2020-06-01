@@ -1,5 +1,6 @@
 import * as google from 'googleapis';
 import { resolve } from 'path';
+import * as AzSB from '@azure/storage-blob';
 import cbfs from 'fs';
 import { promisify } from 'util';
 const fs = {
@@ -103,11 +104,27 @@ export class ChannelManager {
 	}
 
 	private static async getDataFromCache(): Promise<VideoDetails[]> {
+		let stringData: string;
 		try {
-			const metadata = await fs.stat(CACHEPATH);
-			if (metadata.mtimeMs < (Date.now() - EXPIRY)) {
-				console.log('Cache is stale, refreshing');
-				return null;
+			if (process.env.ASB_CONNSTRING && process.env.ASB_CONTAINER) {
+				const serviceClient = AzSB.BlobServiceClient.fromConnectionString(process.env.ASB_CONNSTRING);
+				const containerClient = serviceClient.getContainerClient(process.env.ASB_CONTAINER);
+				const blobClient = containerClient.getBlobClient("cache.json");
+				const metadata = await blobClient.getProperties();
+				if (metadata.lastModified.getTime() < (Date.now() - EXPIRY)) {
+					console.log('Cache is stale, refreshing');
+					return null;
+				}
+
+				stringData = (await blobClient.downloadToBuffer()).toString('utf8');
+			} else {
+				const metadata = await fs.stat(CACHEPATH);
+				if (metadata.mtimeMs < (Date.now() - EXPIRY)) {
+					console.log('Cache is stale, refreshing');
+					return null;
+				}
+
+				stringData = await fs.read(CACHEPATH, { encoding: 'utf8' });
 			}
 		} catch (e) {
 			// failed to fetch cache metadata
@@ -120,17 +137,23 @@ export class ChannelManager {
 			return null;
 		}
 
-		const stringData = await fs.read(CACHEPATH, { encoding: 'utf8' });
 		return JSON.parse(stringData) as VideoDetails[];
 	}
 
 	private static async saveDataToCache(videos: VideoDetails[]) {
 		try {
-			await fs.write(
-				CACHEPATH,
-				JSON.stringify(videos),
-				{ encoding: 'utf8' }
-			);
+			if (process.env.ASB_CONNSTRING && process.env.ASB_CONTAINER) {
+				const serviceClient = AzSB.BlobServiceClient.fromConnectionString(process.env.ASB_CONNSTRING);
+				const containerClient = serviceClient.getContainerClient(process.env.ASB_CONTAINER);
+				const blob = new Buffer(JSON.stringify(videos), 'utf8');
+				await containerClient.uploadBlockBlob("cache.json", blob, blob.byteLength);
+			} else {
+				await fs.write(
+					CACHEPATH,
+					JSON.stringify(videos),
+					{ encoding: 'utf8' }
+				);
+			}
 		}
 		catch (e) {
 			console.error('Failed to write to cache:', e);

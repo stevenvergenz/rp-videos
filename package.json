@@ -24,6 +24,7 @@
     "typescript": "3.0.3"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.1.2",
     "@microsoft/mixed-reality-extension-altspacevr-extras": "^0.13.1",
     "@microsoft/mixed-reality-extension-sdk": "^0.13.1",
     "@types/node": "^10.3.1",
