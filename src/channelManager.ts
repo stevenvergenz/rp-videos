@@ -112,7 +112,7 @@ export class ChannelManager {
 				const blobClient = containerClient.getBlobClient("cache.json");
 				const metadata = await blobClient.getProperties();
 				if (metadata.lastModified.getTime() < (Date.now() - EXPIRY)) {
-					console.log('Cache is stale, refreshing');
+					console.log('Azure cache is stale, refreshing');
 					return null;
 				}
 
@@ -120,7 +120,7 @@ export class ChannelManager {
 			} else {
 				const metadata = await fs.stat(CACHEPATH);
 				if (metadata.mtimeMs < (Date.now() - EXPIRY)) {
-					console.log('Cache is stale, refreshing');
+					console.log('File cache is stale, refreshing');
 					return null;
 				}
 
