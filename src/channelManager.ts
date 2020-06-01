@@ -100,13 +100,14 @@ export class ChannelManager {
 
 		this.videoDetails = await ChannelManager.getDataFromWeb();
 		await this.refreshLiveStatus();
-		ChannelManager.saveDataToCache(this.videoDetails);
+		await ChannelManager.saveDataToCache(this.videoDetails);
 	}
 
 	private static async getDataFromCache(): Promise<VideoDetails[]> {
 		let stringData: string;
 		try {
 			if (process.env.ASB_CONNSTRING && process.env.ASB_CONTAINER) {
+				console.log("Pulling data from Azure cache");
 				const serviceClient = AzSB.BlobServiceClient.fromConnectionString(process.env.ASB_CONNSTRING);
 				const containerClient = serviceClient.getContainerClient(process.env.ASB_CONTAINER);
 				const blobClient = containerClient.getBlobClient("cache.json");
@@ -118,6 +119,7 @@ export class ChannelManager {
 
 				stringData = (await blobClient.downloadToBuffer()).toString('utf8');
 			} else {
+				console.log("Pulling data from file cache");
 				const metadata = await fs.stat(CACHEPATH);
 				if (metadata.mtimeMs < (Date.now() - EXPIRY)) {
 					console.log('File cache is stale, refreshing');
