@@ -4,11 +4,10 @@
  */
 
 import * as MRE from '@microsoft/mixed-reality-extension-sdk';
-import { VideoPlayerManager } from '@microsoft/mixed-reality-extension-altspacevr-extras';
 
 import { ChannelManager, VideoDetails } from './channelManager';
 
-const UPDATE_TIMEOUT = 1 * 60 * 1000; // five minutes
+const UPDATE_TIMEOUT = 3 * 60 * 1000; // three minutes
 
 /**
  * The main class of this app. All the logic goes here.
@@ -75,7 +74,7 @@ export default class VideoManager {
 		this.createVolumeControls();
 
 		this.playChannel(null);
-		await this.channels.updateVideoLinks();
+		await this.channels.updateVideoLinks(this.params.forceUpdate !== undefined);
 		this.updateUI();
 		this.playChannel(this.channels.highestPriorityStream);
 
@@ -196,7 +195,7 @@ export default class VideoManager {
 		const buttonVids = this.channels.videoDetails.filter(vd => {
 			const now = Date.now();
 			const sixtyMinutes = 60 * 60 * 1000;
-			return vd.live ||
+			return vd.live || vd.startTime === null ||
 				vd.startTime < (now + sixtyMinutes) && vd.startTime > (now - sixtyMinutes);
 		});
 
@@ -233,7 +232,7 @@ export default class VideoManager {
 					if (!this.userIsMod(user)) return;
 					console.log(`User ${user.name} changed the channel`);
 					this.playChannel(deets);
-					if (!deets.live) {
+					if (!deets.live && deets.startTime !== null) {
 						this.timerInterval = setInterval(() => {
 							const diff = (deets.startTime - Date.now()) / 1000;
 							const countdownString =

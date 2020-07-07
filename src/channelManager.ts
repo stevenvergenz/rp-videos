@@ -37,6 +37,7 @@ export interface VideoDetails {
 	live: boolean;
 	startTime: number;
 	priority?: number;
+	manuallyAdded: boolean;
 }
 
 const CACHEPATH = process.env['CACHE_PATH'] || resolve(__dirname, '../db/cache.json');
@@ -69,10 +70,12 @@ export class ChannelManager {
 			const updates: { [id: string]: Partial<VideoDetails> } = {};
 			for (const result of response.data.items) {
 				updates[result.id] = {
+					name: result.snippet.title,
 					live: result.snippet.liveBroadcastContent === 'live',
-					startTime: Date.parse(
-						result.liveStreamingDetails.actualStartTime ||
-						result.liveStreamingDetails.scheduledStartTime)
+					startTime: result.liveStreamingDetails ?
+						Date.parse(result.liveStreamingDetails.actualStartTime
+							|| result.liveStreamingDetails.scheduledStartTime) :
+						null
 				};
 			}
 
@@ -94,13 +97,17 @@ export class ChannelManager {
 			this.videoDetails = await ChannelManager.getDataFromCache();
 			if (this.videoDetails) {
 				// fresh cache data found, use it
+				this.videoDetails = [...this.videoDetails, ...ChannelManager.getManualData()];
+				await this.refreshLiveStatus();
+				console.log("Videos found:", this.videoDetails.map(vd => vd.name));
 				return;
 			}
 		}
 
-		this.videoDetails = await ChannelManager.getDataFromWeb();
+		this.videoDetails = [...(await ChannelManager.getDataFromWeb()), ...ChannelManager.getManualData()];
 		await this.refreshLiveStatus();
-		await ChannelManager.saveDataToCache(this.videoDetails);
+		await ChannelManager.saveDataToCache(this.videoDetails.filter(vd => !vd.manuallyAdded));
+		console.log("Videos found:", this.videoDetails.map(vd => vd.name));
 	}
 
 	private static async getDataFromCache(): Promise<VideoDetails[]> {
@@ -112,9 +119,13 @@ export class ChannelManager {
 				const containerClient = serviceClient.getContainerClient(process.env.ASB_CONTAINER);
 				const blobClient = containerClient.getBlobClient("cache.json");
 				const metadata = await blobClient.getProperties();
-				if (metadata.lastModified.getTime() < (Date.now() - EXPIRY)) {
+				const expiry = (metadata.lastModified.getTime() + EXPIRY) - Date.now();
+				if (expiry < 0) {
 					console.log('Azure cache is stale, refreshing');
 					return null;
+				} else {
+					const prettyExpiry = Math.ceil(expiry / 60_000).toLocaleString("en-US");
+					console.log(`Azure cache is fresh, expires in ${prettyExpiry} minutes`);
 				}
 
 				stringData = (await blobClient.downloadToBuffer()).toString('utf8');
@@ -165,20 +176,6 @@ export class ChannelManager {
 	private static async getDataFromWeb(): Promise<VideoDetails[]> {
 		const videoDetails: VideoDetails[] = [];
 
-		// use manually provided video IDs instead of searching if provided
-		if (process.env.VIDEO_URLS) {
-			const urls = process.env.VIDEO_URLS.split(';');
-			videoDetails.push(...urls.map((url, i) => {
-				return {
-					index: i,
-					id: url,
-					name: `Manual Video ${i}`,
-					url,
-					live: true
-				} as VideoDetails;
-			}));
-		}
-
 		const service = new google.youtube_v3.Youtube({ auth: API_KEY });
 		for (const channelId of SourceYoutubeChannels) {
 			const streams: google.youtube_v3.Schema$SearchResult[] = [];
@@ -217,7 +214,8 @@ export class ChannelManager {
 						url: `youtube://${result.id.videoId}`,
 						thumbnailUrl: result.snippet.thumbnails.default.url,
 						live: result.snippet.liveBroadcastContent === 'live',
-						priority: 0
+						priority: 0,
+						manuallyAdded: false
 					} as VideoDetails;
 
 					for (const [regex, pri] of VidPriorities.entries()) {
@@ -226,7 +224,6 @@ export class ChannelManager {
 						}
 					}
 
-					console.log('Found video', deets);
 					return deets;
 				})
 				.sort((a, b) =>
@@ -237,5 +234,24 @@ export class ChannelManager {
 		}
 		videoDetails.forEach((vid, i) => vid.index = i);
 		return videoDetails;
+	}
+
+	private static getManualData() {
+		// use manually provided video IDs instead of searching if provided
+		if (process.env.VIDEO_URLS) {
+			const urls = process.env.VIDEO_URLS.split(';');
+			return urls.map((url, i) => {
+				return {
+					index: i,
+					id: url.startsWith("youtube://") ? url.slice(10) : url,
+					name: `Manual Video ${i}`,
+					url,
+					live: true,
+					manuallyAdded: true
+				} as VideoDetails;
+			});
+		} else {
+			return [];
+		}
 	}
 }
