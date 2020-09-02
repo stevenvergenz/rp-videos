@@ -28,6 +28,6 @@
     "@microsoft/mixed-reality-extension-altspacevr-extras": "^0.13.1",
     "@microsoft/mixed-reality-extension-sdk": "^0.13.1",
     "@types/node": "^10.3.1",
-    "googleapis": "^39.0.0"
+    "googleapis": "^39.1.0"
   }
 }
