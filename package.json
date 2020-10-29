@@ -5,7 +5,7 @@
   "description": "",
   "main": "built/server.js",
   "author": "Steven Vergenz",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "engines": {
     "node": ">=8.12.0",
     "npm": ">=6.4.1"
@@ -21,13 +21,13 @@
   "devDependencies": {
     "@types/redis": "^2.8.12",
     "tslint": "5.11.0",
-    "typescript": "3.0.3"
+    "typescript": "^4.0.5"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.1.2",
-    "@microsoft/mixed-reality-extension-altspacevr-extras": "^0.13.1",
-    "@microsoft/mixed-reality-extension-sdk": "^0.13.1",
+    "@microsoft/mixed-reality-extension-altspacevr-extras": "^0.20.0",
+    "@microsoft/mixed-reality-extension-sdk": "^0.20.0",
     "@types/node": "^10.3.1",
-    "googleapis": "^39.0.0"
+    "googleapis": "^62.0.0"
   }
 }

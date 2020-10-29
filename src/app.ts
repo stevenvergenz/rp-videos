@@ -126,7 +126,7 @@ export default class VideoManager {
 					enabled: this.modsOnly,
 					meshId: buttonMesh.id
 				},
-				collider: { geometry: { shape: 'auto' } },
+				collider: { geometry: { shape: MRE.ColliderType.Auto } },
 				transform: { local: { position: { x: 1.7, y: 0.18 } } }
 			}
 		});
@@ -150,7 +150,7 @@ export default class VideoManager {
 					enabled: this.modsOnly,
 					meshId: buttonMesh.id
 				},
-				collider: { geometry: { shape: 'auto' } },
+				collider: { geometry: { shape: MRE.ColliderType.Auto } },
 				transform: { local: { position: { x: 1.7, y: -0.18 } } }
 			}
 		});
@@ -280,7 +280,7 @@ export default class VideoManager {
 					).id,
 					meshId: this.channelButtonMesh.id
 				},
-				collider: { geometry: { shape: 'auto' } }
+				collider: { geometry: { shape: MRE.ColliderType.Auto } }
 			}
 		});
 	}

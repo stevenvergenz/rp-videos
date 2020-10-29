@@ -1,0 +1,7 @@
+{
+    "name": "Rocket Party Videos",
+    "description": "Watch space-related livestreams",
+    "author": "Steven Vergenz",
+    "license": "GPL-3.0-or-later",
+    "optionalPermissions": ["user-interaction"]
+}

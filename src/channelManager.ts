@@ -61,8 +61,8 @@ export class ChannelManager {
 		try {
 			const service = new google.youtube_v3.Youtube({ auth: API_KEY });
 			const response = await service.videos.list({
-				part: 'snippet,liveStreamingDetails',
-				id: this.videoDetails.filter(vd => /^youtube:/.test(vd.url)).map(vd => vd.id).join(','),
+				part: ['snippet', 'liveStreamingDetails'],
+				id: this.videoDetails.filter(vd => /^youtube:/.test(vd.url)).map(vd => vd.id),
 				maxResults: this.videoDetails.length,
 				key: API_KEY
 			});
@@ -181,9 +181,9 @@ export class ChannelManager {
 			const streams: google.youtube_v3.Schema$SearchResult[] = [];
 			try {
 				const liveStreams = await service.search.list({
-					part: 'snippet',
+					part: ['snippet'],
 					channelId,
-					type: 'video',
+					type: ['video'],
 					eventType: 'live',
 					order: 'rating',
 					relevanceLanguage: 'en',
@@ -192,9 +192,9 @@ export class ChannelManager {
 				});
 				streams.push(...liveStreams.data.items);
 				const upcomingStreams = await service.search.list({
-					part: 'snippet',
+					part: ['snippet'],
 					channelId,
-					type: 'video',
+					type: ['video'],
 					eventType: 'upcoming',
 					order: 'rating',
 					relevanceLanguage: 'en',
