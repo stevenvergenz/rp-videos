@@ -16,10 +16,11 @@ const SourceYoutubeChannels = [
 	// 'UC-r31xs58uQtLrpXDNazBpw', // stevenvergenz
 	'UCtI0Hodo5o5dUb67FeUjDeA', // SpaceX
 	'UCVxTHEKKLxNjGcvVaZindlg', // Blue Origin
-	'UCRn9F2D9j-t4A-HgudM7aLQ', // Arianespace
+	// 'UCRn9F2D9j-t4A-HgudM7aLQ', // Arianespace
 	'UCsWq7LZaizhIi-c-Yo_bcpw', // Rocket Lab
 	'UC6uKrU_WqJ1R2HMTY3LIx5Q', // Everyday Astronaut
-	'UCnrGPRKAg1PgvuSHrRIl3jg', // ULA
+	// 'UCnrGPRKAg1PgvuSHrRIl3jg', // ULA
+	'UCSUu1lih2RifWkKtDOJdsBA', // NASASpaceflight
 	'UCLA_DiR1FfKNvjuUpBHmylQ', // NASA TV
 ];
 
